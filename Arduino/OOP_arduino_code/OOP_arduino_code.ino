@@ -4,7 +4,7 @@ class Motor {
     int pins[6];
     int states[6] = {LOW,LOW,LOW,LOW,LOW,LOW};
     int step_c = 0;
-
+    char id = 'a';
     void setup_pins() {
       for(int i=1; i<5;i++) {
         pinMode(pins[i],OUTPUT);
@@ -12,8 +12,8 @@ class Motor {
     }
     
   public:
-    Motor(int a, int b, int c, int d) {
-      
+    Motor(char id, int a, int b, int c, int d) {
+      this->id = id;
       pins[0]=d;
       pins[1]=a;
       pins[2]=b;
@@ -26,8 +26,11 @@ class Motor {
 
 
     void reset() {
+      states[0] = LOW;
+      states[5] = LOW;
       for(int i=1; i<5;i++) {
         digitalWrite(pins[i],LOW);
+        states[i]=LOW;
       }
     }
 
@@ -42,15 +45,29 @@ class Motor {
         states[0]=s;
         states[4]=s;
       }
+      //Serial.print(id);
+      //Serial.print(" | ");
+      /*
+      for(int i=0; i<6;i++) {
+        Serial.print(states[i]);
+        Serial.print(" ");
+      }
+      Serial.println();
+      delay(200);
+      */
     }
 
     void print_states() {
-      String message="{";
-      for(int i=0; i<sizeof(states);i++) {
-        message=message+String(states[i]) +","; 
+      Serial.print(id);
+      Serial.print(" | ");
+      
+      for(int i=0; i<6;i++) {
+        Serial.print(states[i]);
+        Serial.print(" ");
       }
-      message+="}";
-      //Serial.println(message);
+      Serial.println();
+      delay(200);
+      
     }
     
     void next_step() {
@@ -62,12 +79,15 @@ class Motor {
       } else {
 
       for(int i=1; i<5;i++) {
-        if(states[i]==HIGH && states[i+1]==HIGH) {
+        if(i==1 && states[i]==HIGH && states[0] == HIGH) {
+          write_index(0,LOW);
+          return;
+        } else if(states[i]==HIGH && states[i+1]==HIGH) {
           write_index(i,LOW);
-          break;
+          return;
         } else if(states[i]==HIGH) {
           write_index(i+1,HIGH);
-          break;
+          return;
         }
       }   
 
@@ -81,8 +101,8 @@ class Motor {
 };
 
 
-Motor mot_a(2,3,4,5);
-Motor mot_b(6,7,8,9);
+Motor mot_a('a',2,4,3,5);
+Motor mot_b('b',6,8,7,9);
 Motor mots[2] = {mot_a,mot_b};
 
 int dt=5;
